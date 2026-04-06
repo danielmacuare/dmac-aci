@@ -34,7 +34,7 @@ resource "aci_attachable_access_entity_profile" "dmacprod_aaep" {
   relation_infra_rs_dom_p = [aci_physical_domain.dmac_prod.id] # Binds AAEP to physical domain
 }
 
-# Enable CDP, LLDP, LACP for the Policy Group:
+# Enable CDP, LLDP, LACP and 10G_SPEED for the Policy Group:
 
 resource "aci_cdp_interface_policy" "cdp_enable" {
   name        = "CDP_Enable"
@@ -51,6 +51,12 @@ resource "aci_lacp_policy" "lacp_active" {
   description = "${var.tform_managed} - LACP Enable"
 }
 
+resource "aci_fabric_if_pol" "ten_gig_speed" {
+  name        = "10G_SPEED"
+  description = "${var.tform_managed} - 10G Speed"
+  speed       = "10G"
+}
+
 # Create Interface vPC Policy Groups
 
 resource "aci_leaf_access_bundle_policy_group" "ESXILab01_VPC" {
@@ -61,6 +67,7 @@ resource "aci_leaf_access_bundle_policy_group" "ESXILab01_VPC" {
   relation_infra_rs_lldp_if_pol = aci_lldp_interface_policy.lldp_enable.id
   relation_infra_rs_lacp_pol    = aci_lacp_policy.lacp_active.id
   relation_infra_rs_att_ent_p   = aci_attachable_access_entity_profile.dmacprod_aaep.id
+  relation_infra_rs_h_if_pol    = aci_fabric_if_pol.ten_gig_speed.id
 }
 
 
