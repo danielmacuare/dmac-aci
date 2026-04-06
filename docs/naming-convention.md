@@ -16,9 +16,14 @@ Source: <https://www.cisco.com/c/dam/en/us/solutions/collateral/data-center-virt
 - Leaf-Spine Numbering
   - Spines: 100 - 199
   - Pod1Leafs: 200 - 299
-  - Pod2Leafs: 200 - 299
+  - Pod2Leafs: 300 - 399
 
 ## Access Policies
+
+- VLAN Pool (D)
+  - GUI: Fabric > Access Policies > Pools > Vlan Pools
+  - Example: DmacProd_StaticVLPool
+  - Description: DMAC VLAN Pool for Production
 
 - AAEP (Attachable Access Entity Profiles)
   - Example: ProdPorts_AAEP

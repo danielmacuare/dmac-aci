@@ -1,3 +1,6 @@
+# Notes: We can use the API inspector to see how to relate objects
+# /settings / show API Inspector
+
 #Vlan Pool
 
 resource "aci_vlan_pool" "prod_vlan_pool" {
@@ -17,8 +20,27 @@ resource "aci_ranges" "prod_aci_ranges" {
 
 
 # Physical Domain
+resource "aci_physical_domain" "dmac_prod" {
+  name = "DMACProd_PhysDom"
+  relation_infra_rs_vlan_ns = aci_vlan_pool.prod_vlan_pool.id # Binds VLAN pool to physical domain
+}
+
 
 # AAEP (Attachable Access Entity Profile)
+
+resource "aci_attachable_access_entity_profile" "dmacprod_aaep" {
+  name        = "DMACProd_AAEP"
+  description = "${var.tform_managed} - AAEP DMAC Prod"
+  relation_infra_rs_dom_p = [aci_physical_domain.dmac_prod.id] # Binds AAEP to physical domain
+}
+
+# Bind AAEP to Physical Domain
+
+resource "aci_aaep_to_domain" "dmacprod_aaep_to_phydom" {
+  attachable_access_entity_profile_dn = aci_attachable_access_entity_profile.dmacprod_aaep.id
+  domain_dn                           = aci_physical_domain.dmac_prod.id
+}
+
 
 # Interface Policy Group
 
