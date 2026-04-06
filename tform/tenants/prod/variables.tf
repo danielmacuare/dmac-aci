@@ -11,5 +11,5 @@ variable "user" {
 variable "tform_managed" {
   description = "Standard annotation for Terraform-managed objects"
   type        = string
-  default     = "This object is managed by Terraform"
+  default     = "Terraform Managed"
 }
