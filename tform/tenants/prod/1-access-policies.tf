@@ -158,10 +158,33 @@ resource "aci_access_port_block" "esxilab03_blk" {
 
 # Switch Profile
 
+resource "aci_leaf_profile" "leaf101_102_sp" {
+  name                         = "Leaf101_102_SP"
+  description                  = "${var.tform_managed} - Leaf Profile L101 and L102"
+  relation_infra_rs_acc_port_p = [aci_leaf_interface_profile.leaf101_102_ip.id]
+}
 
 
 
+# Leaf Selector - Associates the interface profile with the selector
+
+resource "aci_leaf_selector" "leaf101_102_selector" {
+  name                = "Leaf101_102_Selector"
+  description         = "${var.tform_managed} - Leaf 101 and 102"
+  switch_association_type = "range"
+  leaf_profile_dn     = aci_leaf_profile.leaf101_102_sp.id
+}
 
 
+# Node Blocks - Actually selects the leave switches
 
-# Output: The physical ports on Leaf 101 are now awake, configured, and legally allowed to carry VLANs 31-40. But they are waiting for a Tenant to actually use them.
+resource "aci_node_block" "check" {
+  switch_association_dn   = aci_leaf_selector.leaf101_102_selector.id
+  name                    = "block"
+  description             = "${var.tform_managed} - Node Block L101-L102"
+  from_                   = "101"
+  to_                     = "102"
+}
+
+# Output: The physical ports on Leaf 101 and 102 (vPC) are now awake, configured, and legally allowed to carry VLANs 400-500.
+# But they are waiting for a Tenant to actually use them.
