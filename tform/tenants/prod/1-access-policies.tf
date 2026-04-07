@@ -21,7 +21,7 @@ resource "aci_ranges" "prod_aci_ranges" {
 
 # Physical Domain
 resource "aci_physical_domain" "dmac_prod" {
-  name = "DMACProd_PhysDom"
+  name                      = "DMACProd_PhysDom"
   relation_infra_rs_vlan_ns = aci_vlan_pool.prod_vlan_pool.id # Binds VLAN pool to physical domain
 }
 
@@ -95,63 +95,67 @@ resource "aci_leaf_access_bundle_policy_group" "esxilab03_VPC" {
 
 # Interface Profile 
 resource "aci_leaf_interface_profile" "leaf101_102_ip" {
-  name = "Leaf101_102_IP"
+  name        = "Leaf101_102_IP"
+  description = "${var.tform_managed} - Interface Profile L101 and L102"
 }
 
-# Port Selectors: Eth-1/1, Eth-1/2, Eth-1/3
-# esxi-lab-01 (Eth-1/1)
-resource "aci_access_port_selector" "esxilab01_port_1_1" {
+# Port Selectors: Eth-1/31, Eth-1/32, Eth-1/33
+# esxi-lab-01 (Eth-1/31)
+resource "aci_access_port_selector" "esxilab01_port_1_31" {
   leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_1"
+  name                           = "eth1_31"
+  description                    = "${var.tform_managed} - Port Selector ESXILab01 Eth1/31"
   access_port_selector_type      = "range"
-  
   relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab01_VPC.id
 }
 
 resource "aci_access_port_block" "esxilab01_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab01_port_1_1.id
+  access_port_selector_dn = aci_access_port_selector.esxilab01_port_1_31.id
   name                    = "blk1"
+  description             = "${var.tform_managed} - Port Block ESXILab01 Eth1/31"
   from_card               = "1"
-  from_port               = "1" # Defines Port 1/1
+  from_port               = "31" # Defines Port 1/31
   to_card                 = "1"
-  to_port                 = "1"
+  to_port                 = "31"
 }
 
-# esxi-lab-02 (Eth-1/2)
-resource "aci_access_port_selector" "esxilab02_port_1_2" {
+# esxi-lab-02 (Eth-1/32)
+resource "aci_access_port_selector" "esxilab02_port_1_32" {
   leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_2"
+  name                           = "eth1_32"
+  description                    = "${var.tform_managed} - Port Selector ESXILab02 Eth1/32"
   access_port_selector_type      = "range"
-  
   relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab02_VPC.id
 }
 
 resource "aci_access_port_block" "esxilab02_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab02_port_1_2.id
+  access_port_selector_dn = aci_access_port_selector.esxilab02_port_1_32.id
   name                    = "blk1"
+  description             = "${var.tform_managed} - Port Block ESXILab02 Eth1/32"
   from_card               = "1"
-  from_port               = "2" # Defines Port 1/2
+  from_port               = "32" # Defines Port 1/32
   to_card                 = "1"
-  to_port                 = "2"
+  to_port                 = "32"
 }
 
 
-# esxi-lab-03 (Eth-1/3)
-resource "aci_access_port_selector" "esxilab03_port_1_3" {
+# esxi-lab-03 (Eth-1/33)
+resource "aci_access_port_selector" "esxilab03_port_1_33" {
   leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_3"
+  name                           = "eth1_33"
+  description                    = "${var.tform_managed} - Port Selector ESXILab03 Eth1/33"
   access_port_selector_type      = "range"
-  
   relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab03_VPC.id
 }
 
 resource "aci_access_port_block" "esxilab03_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab03_port_1_3.id
+  access_port_selector_dn = aci_access_port_selector.esxilab03_port_1_33.id
   name                    = "blk1"
+  description             = "${var.tform_managed} - Port Block ESXILab03 Eth1/33"
   from_card               = "1"
-  from_port               = "3" # Defines Port 1/3
+  from_port               = "33" # Defines Port 1/33
   to_card                 = "1"
-  to_port                 = "3"
+  to_port                 = "33"
 }
 
 
