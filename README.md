@@ -8,6 +8,9 @@ We will cover the following workflows:
 
 - Inter-EPG Traffic between ESXi Hosts (Prod VRF) and Network Services (Shared VRF)
 - Receive and advertise routes between the ACI Fabric and NSX-T using L3OUT constructs
+- If time allows:
+  - Policies using ESG instead of EPGs
+  - Dynamic Policies using Tags instead of manually defining the EPGs in the contracts
 
 ## Assumptions
 
@@ -81,3 +84,15 @@ user = {
 
 - [How It Works](docs/how-it-works.md)
 - [Fabric Object Names](docs/fabric-object-names.md)
+
+## Questions
+
+- Cuales son los workflows mas comúnes que se configuran en ACI?
+  - Trafico entre EPGs
+  - Trafico entre EPGs y servicios externos
+  - Trafico entre EPGs y servicios internos
+- Generalmente has vistos que se configuren politicas dinamicas basadas en tags (etiquetas)?
+-
+- Cuales son los problemas mas comunes que se presentan en ACI?
+- Que limitaciones tiene ACI?
+-
