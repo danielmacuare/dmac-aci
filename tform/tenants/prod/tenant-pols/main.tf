@@ -278,3 +278,28 @@ resource "aci_contract_subject_filter" "bind_dhcp" {
   action              = "permit"
   directives          = ["log"] # To Log DHCP traffic
 }
+
+
+################################################################
+# Contract Bindings (Consumer -> Provider)
+################################################################
+
+# NetServices EPG Provider
+resource "aci_epg_to_contract" "provide_network_services" {
+  application_epg_dn = aci_application_epg.epg_netservices.id
+  contract_dn        = aci_contract.contract_network_services.id
+  contract_type      = "provider"
+}
+
+# Consumers EPGs
+resource "aci_epg_to_contract" "compute01_to_netservices" {
+  application_epg_dn = aci_application_epg.epg_compute01.id
+  contract_dn        = aci_contract.contract_network_services.id
+  contract_type      = "consumer"
+}
+
+resource "aci_epg_to_contract" "compute02_to_netservices" {
+  application_epg_dn = aci_application_epg.epg_compute02.id
+  contract_dn        = aci_contract.contract_network_services.id
+  contract_type      = "consumer"
+}
