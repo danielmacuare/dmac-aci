@@ -2,39 +2,82 @@
 
 This repository contains Terraform configurations for deploying ACI infrastructure.
 
+## Workflows
+
+We will cover the following workflows:
+
+- Inter-EPG Traffic between eSXI Hosts (Prod VRF) and Network Services (Shared VRF)
+- Receive and advertise routes between the ACI Fabric and NSX-T using L3OUT constructs
+
+## Assumptions
+
+- Node Policies and Fabric Policies are already configured
+
 ## Build Steps
+
+### Phase 0 - Pre-Requisites
+
+1 - To test this ACI Fabric deployment using terraform, we will use the always-on sandbox environment provided by Cisco.
+
+To book the sandbox visit: <https://devnetsandbox.cisco.com/DevNet/catalog/ACI-Simulator-Always-On_aci-simulator-always-on>
+
+Creds are configured in each terraform folder using the following file:
+
+- Filename: `secrets.auto.tfvars`
+
+```terraform
+user = {
+    username = "admin"
+    password = "MYPASSWORD"
+    url = "https://sandboxapicdc.cisco.com"
+}
+```
+
+2 - Install terraform
 
 ### Phase 1 (Access Policies)
 
-- Goal: I want to configure some physical ports on a switch to be ready to accept traffic. The SVIs (Distributed Anycast Gateways will be configured in the ACI side).
-
-- Vlan Pool
-- Physical Domain
-- AAEP (Attachable Access Entity Profile)
-- Interface Policy Group
-- Interface Profile
-- Switch Profile (Leaf101_SP)
-  - (Once per switch)
-  - Per each vPC (Virtual Port Channel)
-- Output: The physical ports on Leaf 101 are now awake, configured, and legally allowed to carry VLANs 31-40. But they are waiting for a Tenant to actually use them.
+- [x] Vlan Pool
+- [x] Physical Domain
+  - Bind VLAN Pool to Physical Domain
+- [x] AAEP (Attachable Access Entity Profile)
+  - Bind AEEP to Physical Domain
+- [x] Interface Policy Group (Port Channels)
+  - VPC Interface
+  - Enable CDP, LLDP, LACP and 10G Speed Policies for the Policy Group
+  - 1 Policy Group per each vPC Port
+    - ESXILab01_VPC (Done)
+    - ESXILab02_VPC (Done)
+    - ESXILab03_VPC (Done)
+- [x] Interface Profiles (Pick the Switch Ports) - One for the 2 Leagfes
+  - [x] Port Selectors (One per interface)
+  - You need to use `aci_access_port_selector`
+  - Here you will select the Eth-1/1 port and will associate it to esxilab01 vPC Polivy Group (D)
+  - Here you will select the Eth-1/2 port and will associate it to esxilab02 vPC Polivy Group (D)
+  - Here you will select the Eth-1/3 port and will associate it to esxilab03 vPC Polivy Group (D)
+- [x] Switch Profile
+  - [x] Create a switch Profile (Only need one Profile for the 2 Leaves - vPC)
+  - [x] Create Interface Port Selector
+  - [x] Associate a Block that targets Leaf 101-102
 
 ### Phase 2 (Tenant Policies)
 
-#### 2.1 - Network Constructs
+- [x] Tenant
+- [x] VRF
+- [x] Bridge Domains
+- [x] Application Profiles (Like Organizational Folders) to group similar EPGs.
+- [x] EPGs
+- [x] Filters
+- [x] Contracts and Contract Subjects
+- [x] Bind Contracts, Contracts Subjects and Filters
+- [x] Associate Contract with Consumer and Provider EPGs
 
-- Tenant
-- VRF
-- Bridge Domains
+### Phase 3 (Bind Physical + Logical Layer)
 
-#### 2.2 - Map Apps to Ports
+- [x] Bind EPG to Domain (Pushes VLANs to the switch)
+- [x] Bind EPGs to VPC Static Paths
 
-- Application Profile
-- EPGs
-- Domain Binding (EPGs to Physical Domains)
-- Static Ports
+## Docs
 
-#### 2.3 - Security
-
-- Filters
-- Contracts
-- Contract Association (Associate to Provider and Consumer EPGs)
+- [How It Works](docs/how-it-works.md)
+- [Fabric Object Names](docs/fabric-object-names.md)
