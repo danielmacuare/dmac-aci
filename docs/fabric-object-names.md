@@ -29,6 +29,6 @@
 | **VRF** | Storage_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. |
 | **VRF** | External_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. Reserved for future L3Out. |
 | **Bridge Domain** | NetServices_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Shared_VRF`. GW: **10.20.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: shared, public. |
-| **Bridge Domain** | Compute01_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public. |
-| **Bridge Domain** | Compute02_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.1.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public. |
-| **Bridge Domain** | Storage_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Storage_VRF`. GW: **10.30.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: private. |
+| **Bridge Domain** | Compute01_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public, shared. |
+| **Bridge Domain** | Compute02_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.1.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public, shared. |
+| **Bridge Domain** | Storage_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Storage_VRF`. GW: **10.30.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: private, shared. |
