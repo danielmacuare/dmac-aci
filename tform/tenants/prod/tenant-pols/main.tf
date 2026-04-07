@@ -89,7 +89,7 @@ resource "aci_subnet" "sub_compute01" {
   parent_dn   = aci_bridge_domain.bd_compute01.id
   ip          = "10.10.0.1/24"
   description = "${var.tform_managed} - Gateway for Compute 01"
-  scope       = ["public"]
+  scope       = ["public", "shared"]
 }
 
 # App Compute 02 Bridge Domain and Subnet
@@ -109,7 +109,7 @@ resource "aci_subnet" "sub_compute02" {
   parent_dn   = aci_bridge_domain.bd_compute02.id
   ip          = "10.10.1.1/24"
   description = "${var.tform_managed} - Gateway for Compute 02"
-  scope       = ["public"]
+  scope       = ["public", "shared"]
 }
 
 
@@ -130,7 +130,7 @@ resource "aci_subnet" "sub_storage" {
   parent_dn   = aci_bridge_domain.bd_storage.id
   ip          = "10.30.0.1/24"
   description = "${var.tform_managed} - Gateway for Storage Traffic"
-  scope       = ["private"]
+  scope       = ["private", "shared"]
 }
 
 ################################################################
