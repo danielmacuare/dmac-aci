@@ -23,17 +23,12 @@
 | Object | Object Name | GUI Location | Notes |
 | :--- | :--- | :--- | :--- |
 | **Tenant** | DMACProd | `Tenants > Add Tenant` | Top-level logical container for the DMAC Organization Prod. |
-| **VRF** | Prod_VRF | `Tenants > DMAC > Networking > VRFs` | Production VRF to hold the routing table. |
-| **Bridge Domain** | WebSrv_BD | `Tenants > DMAC > Networking > Bridge Domains` | GW: **10.10.10.1/24**. Unicast Routing & ARP Flooding: True. Advertised Externally: True. GARP detection: True. |
-| **Bridge Domain** | AppSrv_BD | `Tenants > DMAC > Networking > Bridge Domains` | GW: **10.10.20.1/24**. Unicast Routing & ARP Flooding: True. Advertised Externally: True. GARP detection: True. |
-| **Bridge Domain** | DbSrv_BD | `Tenants > DMAC > Networking > Bridge Domains` | GW: **10.10.30.1/24**. Unicast Routing & ARP Flooding: True. Advertised Externally: True. GARP detection: True. |
-| **Application Profile** | Web_AP | `Tenants > DMAC > Application Profiles` | Logical folder organizing the Web, App, and DB EPGs. |
-| **Application EPG** | WebSrv_EPG | `Tenants > DMAC > Application Profiles > Web_AP > Application EPGs` | Intra-EPG Isolation: Unenforced. Static Path: Pod-1/Node-101/eth1/31 (VLAN 31). |
-| **Application EPG** | AppSrv_EPG | `Tenants > DMAC > Application Profiles > Web_AP > Application EPGs` | Intra-EPG Isolation: Unenforced. Static Path: Pod-1/Node-101/eth1/32 (VLAN 32). |
-| **Application EPG** | DbSrv_EPG | `Tenants > DMAC > Application Profiles > Web_AP > Application EPGs` | Intra-EPG Isolation: Unenforced. Static Path: Pod-1/Node-101/eth1/33 (VLAN 33). |
-| **Filter** | web_FILT | `Tenants > DMAC > Contracts > Filters` | Web Ports: HTTP (TCP 80), HTTPS (TCP 443), HTTP Alt (TCP 8080). |
-| **Filter** | dbs_FILT | `Tenants > DMAC > Contracts > Filters` | Database Ports: MySQL (TCP 3306), Postgres (TCP 5432), Mongo (TCP 27017). |
-| **Filter** | apps_FILT | `Tenants > DMAC > Contracts > Filters` | Backend App Ports: TCP 3000, 8000, 8080. |
-| **Contract** | WebSrv_to_AppSrv_CT | `Tenants > DMAC > Contracts > Standard` | Scope: App Profile. Subject: Consumer_to_provider. Reverse Filter Ports & Both Directions: True. |
-| **Contract** | internal2web_CT | `Tenants > DMAC > Contracts > Standard` | Scope: App Profile. Subject: web2App_SBJ. Reverse Filter Ports & Both Directions: True. |
-| **EPG Contract Assoc.** | *Varies* | `Tenants > DMAC > App Profiles > Web_AP > App EPGs > [EPG] > Contracts` | `web2App_CT` -> Provider: AppSrv_EPG, Consumer: WebSrv_EPG. |
+| **VRF** | PCI_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. |
+| **VRF** | Shared_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. |
+| **VRF** | Prod_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. |
+| **VRF** | Storage_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. |
+| **VRF** | External_VRF | `Tenants > DMACProd > Networking > VRFs` | Policy enforcement: enforced. Reserved for future L3Out. |
+| **Bridge Domain** | NetServices_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Shared_VRF`. GW: **10.20.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: shared, public. |
+| **Bridge Domain** | Compute01_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public. |
+| **Bridge Domain** | Compute02_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Prod_VRF`. GW: **10.10.1.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: public. |
+| **Bridge Domain** | Storage_BD | `Tenants > DMACProd > Networking > Bridge Domains` | VRF: `Storage_VRF`. GW: **10.30.0.1/24**. Unicast Routing: yes. ARP Flooding: yes. Subnet scope: private. |
