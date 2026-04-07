@@ -49,6 +49,7 @@ resource "aci_lldp_interface_policy" "lldp_enable" {
 resource "aci_lacp_policy" "lacp_active" {
   name        = "LACP_Enable"
   description = "${var.tform_managed} - LACP Enable"
+  mode        = "active"
 }
 
 resource "aci_fabric_if_pol" "ten_gig_speed" {
