@@ -276,4 +276,5 @@ resource "aci_contract_subject_filter" "bind_dhcp" {
   contract_subject_dn = aci_contract_subject.subject_network_services.id
   filter_dn           = aci_filter.filter_dhcp.id
   action              = "permit"
+  directives          = ["log"] # To Log DHCP traffic
 }
