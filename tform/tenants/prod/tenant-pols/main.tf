@@ -281,7 +281,7 @@ resource "aci_contract_subject_filter" "bind_dhcp" {
 
 
 ################################################################
-# Contract Bindings (Consumer -> Provider)
+# Contract to EPG Bindings (Consumer -> Provider)
 ################################################################
 
 # NetServices EPG Provider
@@ -302,4 +302,33 @@ resource "aci_epg_to_contract" "compute02_to_netservices" {
   application_epg_dn = aci_application_epg.epg_compute02.id
   contract_dn        = aci_contract.contract_network_services.id
   contract_type      = "consumer"
+}
+
+
+################################################################
+# Bind EPG to Domain
+################################################################
+
+resource "aci_epg_to_domain" "netservices_epg_to_domain" {
+  application_epg_dn = aci_application_epg.epg_netservices.id
+  tdn                = data.aci_physical_domain.dmac_prod.id
+  # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
+  instr_imedcy       = "immediate"
+  res_imedcy         = "immediate"
+}
+
+resource "aci_epg_to_domain" "compute01_epg_to_domain" {
+  application_epg_dn = aci_application_epg.epg_compute01.id
+  tdn                = data.aci_physical_domain.dmac_prod.id
+  # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
+  instr_imedcy       = "immediate"
+  res_imedcy         = "immediate"
+}
+
+resource "aci_epg_to_domain" "compute02_epg_to_domain" {
+  application_epg_dn = aci_application_epg.epg_compute02.id
+  tdn                = data.aci_physical_domain.dmac_prod.id
+  # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
+  instr_imedcy       = "immediate"
+  res_imedcy         = "immediate"
 }
