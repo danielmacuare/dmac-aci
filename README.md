@@ -40,6 +40,10 @@ user = {
 
 ### Phase 1 (Access Policies)
 
+[Access Policies](tform/tenants/prod/access-pols/main.tf)
+
+![Access Policies](resources/1-Access%20Policies.png)
+
 - [x] Vlan Pool
 - [x] Physical Domain
   - Bind VLAN Pool to Physical Domain
@@ -65,6 +69,10 @@ user = {
 
 ### Phase 2 (Tenant Policies)
 
+[Tenant Policies](tform/tenants/prod/tenant-pols/main.tf)
+
+![Tenant Policies](resources/2-Tenant%20Policies.png)
+
 - [x] Tenant
 - [x] VRF
 - [x] Bridge Domains
@@ -76,6 +84,8 @@ user = {
 - [x] Associate Contract with Consumer and Provider EPGs
 
 ### Phase 3 (Bind Physical + Logical Layer)
+
+![Physical Topology](resources/3-Physical%20Topology.png)
 
 - [x] Bind EPG to Domain (Pushes VLANs to the switch)
 - [x] Bind EPGs to VPC Static Paths
