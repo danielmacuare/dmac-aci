@@ -190,6 +190,3 @@ resource "aci_node_block" "check" {
   from_                   = "101"
   to_                     = "102"
 }
-
-# Output: The physical ports on Leaf 101 and 102 (vPC) are now awake, configured, and legally allowed to carry VLANs 400-500.
-# But they are waiting for a Tenant to actually use them.

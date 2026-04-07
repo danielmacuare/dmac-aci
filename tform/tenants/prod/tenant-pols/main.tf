@@ -332,3 +332,31 @@ resource "aci_epg_to_domain" "compute02_epg_to_domain" {
   instr_imedcy       = "immediate"
   res_imedcy         = "immediate"
 }
+
+################################################################
+# Static Path Bindings: Allow VLANs on the ports defined by the VPC Port Groups
+#Leaf 101 and 102 will now actively "allow" VLANs 401-402 on ports 1/31, 1/32, and 1/33.
+################################################################
+
+# Allow VLAN 401 (Compute01) to the entire cluster 
+resource "aci_epg_to_static_path" "compute01_cluster_trunk" {
+  for_each           = toset(local.esxi_vpcs)
+  
+  application_epg_dn = aci_application_epg.epg_compute01.id
+  tdn                = each.value
+  encap              = "vlan-401"
+  mode               = "regular"      # 802.1Q Tagged
+  instr_imedcy       = "immediate"
+
+}
+
+# Provide VLAN 402 (Compute02) to the entire cluster
+resource "aci_epg_to_static_path" "compute02_cluster_trunk" {
+  for_each           = toset(local.esxi_vpcs)
+
+  application_epg_dn = aci_application_epg.epg_compute02.id
+  tdn                = each.value
+  encap              = "vlan-402"
+  mode               = "regular"      # 802.1Q Tagged
+  instr_imedcy       = "immediate"
+}
