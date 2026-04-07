@@ -6,7 +6,7 @@ This repository contains Terraform configurations for deploying ACI infrastructu
 
 We will cover the following workflows:
 
-- Inter-EPG Traffic between eSXI Hosts (Prod VRF) and Network Services (Shared VRF)
+- Inter-EPG Traffic between ESXi Hosts (Prod VRF) and Network Services (Shared VRF)
 - Receive and advertise routes between the ACI Fabric and NSX-T using L3OUT constructs
 
 ## Assumptions
@@ -41,7 +41,7 @@ user = {
 - [x] Physical Domain
   - Bind VLAN Pool to Physical Domain
 - [x] AAEP (Attachable Access Entity Profile)
-  - Bind AEEP to Physical Domain
+  - Bind AAEP to Physical Domain
 - [x] Interface Policy Group (Port Channels)
   - VPC Interface
   - Enable CDP, LLDP, LACP and 10G Speed Policies for the Policy Group
@@ -49,12 +49,12 @@ user = {
     - ESXILab01_VPC (Done)
     - ESXILab02_VPC (Done)
     - ESXILab03_VPC (Done)
-- [x] Interface Profiles (Pick the Switch Ports) - One for the 2 Leagfes
+- [x] Interface Profiles (Pick the Switch Ports) - One for the 2 Leaves
   - [x] Port Selectors (One per interface)
   - You need to use `aci_access_port_selector`
-  - Here you will select the Eth-1/1 port and will associate it to esxilab01 vPC Polivy Group (D)
-  - Here you will select the Eth-1/2 port and will associate it to esxilab02 vPC Polivy Group (D)
-  - Here you will select the Eth-1/3 port and will associate it to esxilab03 vPC Polivy Group (D)
+  - Here you will select the Eth-1/31 port and will associate it to esxilab01 vPC Policy Group
+  - Here you will select the Eth-1/32 port and will associate it to esxilab02 vPC Policy Group
+  - Here you will select the Eth-1/33 port and will associate it to esxilab03 vPC Policy Group
 - [x] Switch Profile
   - [x] Create a switch Profile (Only need one Profile for the 2 Leaves - vPC)
   - [x] Create Interface Port Selector
