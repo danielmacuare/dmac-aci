@@ -1,7 +1,7 @@
 # Notes: We can use the API inspector to see how to relate objects
 # /settings / show API Inspector
 
-#Vlan Pool
+#Vlan Pool - Prod 
 
 resource "aci_vlan_pool" "prod_vlan_pool" {
   name  = "DmacProd_StaticVLPool"
@@ -31,7 +31,10 @@ resource "aci_physical_domain" "dmac_prod" {
 resource "aci_attachable_access_entity_profile" "dmacprod_aaep" {
   name        = "DMACProd_AAEP"
   description = "${var.tform_managed} - AAEP DMAC Prod"
-  relation_infra_rs_dom_p = [aci_physical_domain.dmac_prod.id] # Binds AAEP to physical domain
+  relation_infra_rs_dom_p = [
+    aci_physical_domain.dmac_prod.id,
+    aci_l3_domain_profile.nsxt_ext_domain.id
+  ]
 }
 
 # Enable CDP, LLDP, LACP and 10G_SPEED for the Policy Group:
@@ -60,32 +63,12 @@ resource "aci_fabric_if_pol" "ten_gig_speed" {
 
 # Create Interface vPC Policy Groups
 
-resource "aci_leaf_access_bundle_policy_group" "esxilab01_VPC" {
-  name                            = "ESXILab01_VPC"
-  description = "${var.tform_managed} - Interface vPC Policy Group ESXILab01_VPC"
-  lag_t       = "node" #node for vCP, link for single switches Port Channel
-  relation_infra_rs_cdp_if_pol  = aci_cdp_interface_policy.cdp_enable.id
-  relation_infra_rs_lldp_if_pol = aci_lldp_interface_policy.lldp_enable.id
-  relation_infra_rs_lacp_pol    = aci_lacp_policy.lacp_active.id
-  relation_infra_rs_att_ent_p   = aci_attachable_access_entity_profile.dmacprod_aaep.id
-  relation_infra_rs_h_if_pol    = aci_fabric_if_pol.ten_gig_speed.id
-}
+resource "aci_leaf_access_bundle_policy_group" "esxi_vpc" {
+  for_each = local.esxi_hosts
 
-resource "aci_leaf_access_bundle_policy_group" "esxilab02_VPC" {
-  name                            = "ESXILab02_VPC"
-  description = "${var.tform_managed} - Interface vPC Policy Group ESXILab02_VPC"
-  lag_t       = "node" #node for vCP, link for single switches Port Channel
-  relation_infra_rs_cdp_if_pol  = aci_cdp_interface_policy.cdp_enable.id
-  relation_infra_rs_lldp_if_pol = aci_lldp_interface_policy.lldp_enable.id
-  relation_infra_rs_lacp_pol    = aci_lacp_policy.lacp_active.id
-  relation_infra_rs_att_ent_p   = aci_attachable_access_entity_profile.dmacprod_aaep.id
-  relation_infra_rs_h_if_pol    = aci_fabric_if_pol.ten_gig_speed.id
-}
-
-resource "aci_leaf_access_bundle_policy_group" "esxilab03_VPC" {
-  name                            = "ESXILab03_VPC"
-  description = "${var.tform_managed} - Interface vPC Policy Group ESXILab03_VPC"
-  lag_t       = "node" #node for vCP, link for single switches Port Channel
+  name        = "${each.value.display_name}_VPC"
+  description = "${var.tform_managed} - Interface vPC Policy Group ${each.value.display_name}_VPC"
+  lag_t       = "node" # node for vPC, link for single-switch Port Channel
   relation_infra_rs_cdp_if_pol  = aci_cdp_interface_policy.cdp_enable.id
   relation_infra_rs_lldp_if_pol = aci_lldp_interface_policy.lldp_enable.id
   relation_infra_rs_lacp_pol    = aci_lacp_policy.lacp_active.id
@@ -100,66 +83,29 @@ resource "aci_leaf_interface_profile" "leaf101_102_ip" {
   description = "${var.tform_managed} - Interface Profile L101 and L102"
 }
 
-# Port Selectors: Eth-1/31, Eth-1/32, Eth-1/33
-# esxi-lab-01 (Eth-1/31)
-resource "aci_access_port_selector" "esxilab01_port_1_31" {
+# Port Selectors — driven by local.esxi_hosts in locals.tf
+
+resource "aci_access_port_selector" "esxi_port" {
+  for_each = local.esxi_hosts
+
   leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_31"
-  description                    = "${var.tform_managed} - Port Selector ESXILab01 Eth1/31"
+  name                           = "eth1_${each.value.port}"
+  description                    = "${var.tform_managed} - Port Selector ${each.value.display_name} Eth1/${each.value.port}"
   access_port_selector_type      = "range"
-  relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab01_VPC.id
+  relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxi_vpc[each.key].id
 }
 
-resource "aci_access_port_block" "esxilab01_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab01_port_1_31.id
+resource "aci_access_port_block" "esxi_port_block" {
+  for_each = local.esxi_hosts
+
+  access_port_selector_dn = aci_access_port_selector.esxi_port[each.key].id
   name                    = "blk1"
-  description             = "${var.tform_managed} - Port Block ESXILab01 Eth1/31"
+  description             = "${var.tform_managed} - Port Block ${each.value.display_name} Eth1/${each.value.port}"
   from_card               = "1"
-  from_port               = "31" # Defines Port 1/31
+  from_port               = each.value.port
   to_card                 = "1"
-  to_port                 = "31"
+  to_port                 = each.value.port
 }
-
-# esxi-lab-02 (Eth-1/32)
-resource "aci_access_port_selector" "esxilab02_port_1_32" {
-  leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_32"
-  description                    = "${var.tform_managed} - Port Selector ESXILab02 Eth1/32"
-  access_port_selector_type      = "range"
-  relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab02_VPC.id
-}
-
-resource "aci_access_port_block" "esxilab02_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab02_port_1_32.id
-  name                    = "blk1"
-  description             = "${var.tform_managed} - Port Block ESXILab02 Eth1/32"
-  from_card               = "1"
-  from_port               = "32" # Defines Port 1/32
-  to_card                 = "1"
-  to_port                 = "32"
-}
-
-
-# esxi-lab-03 (Eth-1/33)
-resource "aci_access_port_selector" "esxilab03_port_1_33" {
-  leaf_interface_profile_dn      = aci_leaf_interface_profile.leaf101_102_ip.id
-  name                           = "eth1_33"
-  description                    = "${var.tform_managed} - Port Selector ESXILab03 Eth1/33"
-  access_port_selector_type      = "range"
-  relation_infra_rs_acc_base_grp = aci_leaf_access_bundle_policy_group.esxilab03_VPC.id
-}
-
-resource "aci_access_port_block" "esxilab03_blk" {
-  access_port_selector_dn = aci_access_port_selector.esxilab03_port_1_33.id
-  name                    = "blk1"
-  description             = "${var.tform_managed} - Port Block ESXILab03 Eth1/33"
-  from_card               = "1"
-  from_port               = "33" # Defines Port 1/33
-  to_card                 = "1"
-  to_port                 = "33"
-}
-
-
 
 # Switch Profile
 
