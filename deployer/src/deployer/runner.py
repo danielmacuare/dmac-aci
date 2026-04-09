@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import subprocess
@@ -35,20 +36,22 @@ class ModuleResult:
     skipped: bool = False
 
 
-_PLAN_RE = re.compile(
-    r"Plan:\s+(\d+) to add,\s+(\d+) to change,\s+(\d+) to destroy"
+_PLAN_RE = re.compile(r"Plan:\s+(\d+) to add,\s+(\d+) to change,\s+(\d+) to destroy")
+_COMPLETE_RE = re.compile(r"^\s*([\w.\"/-]+):\s+(Creation|Destruction) complete after")
+_NO_CHANGES_RE = re.compile(
+    r"No changes\.|Your infrastructure matches the configuration"
 )
-_COMPLETE_RE = re.compile(
-    r"^\s*([\w.\"/-]+):\s+(Creation|Destruction) complete after"
-)
-_NO_CHANGES_RE = re.compile(r"No changes\.|Your infrastructure matches the configuration")
 
 
 def _build_env(settings: Settings) -> dict[str, str]:
     env = os.environ.copy()
-    env["TF_VAR_aci_url"] = settings.aci_url
-    env["TF_VAR_aci_username"] = settings.aci_username
-    env["TF_VAR_aci_password"] = settings.aci_password
+    env["TF_VAR_user"] = json.dumps(
+        {
+            "username": settings.aci_username,
+            "password": settings.aci_password,
+            "url": settings.aci_url,
+        }
+    )
     env["TF_IN_AUTOMATION"] = "1"
     return env
 

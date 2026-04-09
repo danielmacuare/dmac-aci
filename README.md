@@ -15,6 +15,7 @@ We will cover the following workflows:
 ## Assumptions
 
 - Node Policies and Fabric Policies are already configured
+- RR Policies are already configured to distribute routes to all the Leaves. Spines shoulb be configured as RR to distribute routes to all the Leaves.
 
 ## Build Steps
 
@@ -87,10 +88,65 @@ user = {
 
 ![Physical Topology](resources/3-Physical%20Topology.png)
 
-- [x] Bind EPG to Domain (Pushes VLANs to the switch)
-- [x] Bind EPGs to VPC Static Paths
+- Bind EPG to Domain (Pushes VLANs to the switch)
+- Bind EPGs to VPC Static Paths
+
+### Phase 4 L3 OUT
+
+#### DATA
+
+- ACI: 10.60.10.1/29 (VLAN 405) - Eth1/45 - Leaf101 - ASN 65001 - Router ID: 1.1.1.101
+- ACI: 10.60.10.3/29 (VLAN 405) - Eth1/46 - Leaf102 - ASN 65001 - Router ID: 1.1.1.102
+- NSX - Node 1: 10.60.10.2/29 (VLAN 405) - ASN 65002
+- NSX - Node 2: 10.60.10.4/29 (VLAN 405) - ASN 65003
+
+#### Access Policies (Physical Side)
+
+- Create VLAN Pool - VLAN 405 - Already exists: (D)
+- Create L3 Domain (External Routed Domain): DmacProdNSX_L3Domain (D)
+- Create AAEP:  NSXT_AAEP (D)
+- Create interface profile: Which interface I want to configure and how? (D)
+  - Interface/Port Selector and blocks:
+    - Et-1/45 ACI Side
+    - Et-1/46 ACI Side
+  - Access Port Policy Group
+    - SPEED10G
+    - CDP
+    - AAEP
+- Assign Interface Profile to the Switch Profile (Already done)
+
+#### L3OUT and L3OUT EPG (Logical Config)
+
+- We create the L3OUT (D)
+  - Bind it to the Prod_VRF
+  - Attach it to the NSXT_L3Domain
+    - We enable BGP
+- Assign L3OUT to Border Leaf (D)
+  - Logical Node Profile (Assign it to Leaves, enable Loopbacks and configure Router ID)
+- Define SVIs on the Leaves Ports (D)
+  - Interface Profile
+  - Path Attachment
+- Define BGP Connectivity Profile (D)
+  - Remote ASN
+  - Remote IP
+- Define external EPG (D)
+  - Define EPG
+  - Add L3 Subnets to the EPG
+    - On
+    - **shared-rtctrl** **(Shared Route Control Subnet):** This indicates that the network learned from the outside (in your case, NSX-T), can be leaked to other VRF instances, assuming they have a contract with this external EPG.
+    - **shared-security** **(Shared Security Import Subnet):** This defines which subnets learned from a shared VRF belong to this external EPG so that cross-VRF contract filtering can be applied properly.I
+- Create contracts to allow internal to external and the other way around
+  - Create contract and filters
+    - scope = "tenant" because we want to leak these routes into the Shared VRF.
+    - Filters: 80, 443, 3306 and ICMP Ping
+  - Bind the contract to the external EPG (Provider)
+  - Bind the contract to the Compute EPGs (Consumers)
 
 ## Docs
 
 - [How It Works](docs/how-it-works.md)
 - [Fabric Object Names](docs/fabric-object-names.md)
+
+## TO Improve
+
+- [ ] Split main.tf files in manageable files with logical groupings
