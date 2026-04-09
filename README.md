@@ -94,15 +94,3 @@ user = {
 
 - [How It Works](docs/how-it-works.md)
 - [Fabric Object Names](docs/fabric-object-names.md)
-
-## Questions
-
-- Cuales son los workflows mas comúnes que se configuran en ACI?
-  - Trafico entre EPGs
-  - Trafico entre EPGs y servicios externos
-  - Trafico entre EPGs y servicios internos
-- Generalmente has vistos que se configuren politicas dinamicas basadas en tags (etiquetas)?
--
-- Cuales son los problemas mas comunes que se presentan en ACI?
-- Que limitaciones tiene ACI?
--
