@@ -1,0 +1,24 @@
+[project]
+name = "dmac-aci-deployer"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13",
+    "pydantic-settings>=2",
+]
+
+[project.scripts]
+deployer = "deployer.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/deployer"]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8",
+]
