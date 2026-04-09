@@ -7,10 +7,8 @@ resource "aci_l3_outside" "nsxt_l3out" {
   name        = "NSXT_L3Out"
   description = "${var.tform_managed} - Direct Peering to NSX-T Tier-0"
   
-  # 1. Bind to your existing Production VRF
   relation_l3ext_rs_ectx = aci_vrf.dmacprod_vrf.id
   
-  # 2. Bind to the L3 Domain we created in the Access Policies
   relation_l3ext_rs_l3_dom_att = data.aci_l3_domain_profile.nsxt_ext_domain.id
   
   # 3. Enable BGP Route Export (Required to send routes to NSX-T)
@@ -18,7 +16,7 @@ resource "aci_l3_outside" "nsxt_l3out" {
 }
 
 ################################################################
-# Define Logical Node Profiles for NSX-T L3 Out
+# Define Logical Node Profiles
 ################################################################
 
 resource "aci_logical_node_profile" "nsxt_l3out" {
@@ -40,7 +38,7 @@ resource "aci_logical_node_to_fabric_node" "nsxt_nodes" {
 }
 
 ################################################################
-# Logical Interface Profiles & SVIs for NSX-T L3 Out
+# Logical Interface Profiles & SVIs
 ################################################################
 
 resource "aci_logical_interface_profile" "nsxt_l3out_intprof" {
@@ -49,7 +47,6 @@ resource "aci_logical_interface_profile" "nsxt_l3out_intprof" {
   description             = "${var.tform_managed} - Logical Interface Profile for NSX-T L3 Out"
 }
 
-# Attach Paths to Border Leafs dynamically
 resource "aci_l3out_path_attachment" "nsxt_paths" {
   for_each = local.nsxt_border_leaves
 
@@ -78,8 +75,6 @@ resource "aci_bgp_peer_connectivity_profile" "nsxt_bgp_peer" {
 }
 
 ################################################################
-# External EPG Container and subnets for NSX-T Workloads
-################################################################
 
 resource "aci_external_network_instance_profile" "nsxt_ext_epg" {
   l3_outside_dn = aci_l3_outside.nsxt_l3out.id
@@ -96,5 +91,74 @@ resource "aci_l3_ext_subnet" "nsxt_catch_all_subnet" {
   ip                                   = each.value
   
   # CRITICAL: 'import-security' is required to allow Contracts to apply to this subnet
-  scope                                = ["import-security"] 
+  # 'shared-rtctrl' is required to allow learned routes from NSXT to be leaked to other VRFs like the shared VRF.
+  # 'shared-security' is required to allow learned routes to be advertised to other VRFs.
+  scope                                = ["import-security", "shared-rtctrl", "shared-security"] 
+}
+
+
+################################################################
+# Contracts
+################################################################
+
+resource "aci_contract" "nsxt_contract" {
+  tenant_dn = aci_tenant.dmacprod_tenant.id
+  name      = "NSXT_Contract"
+  description = "${var.tform_managed} - Contract for NSX-T Workloads"
+  scope = "tenant" # Because we want to leak routed between VRFs
+}
+################################################################
+# Filters and Subjects
+################################################################
+
+
+resource "aci_filter" "filter_nsxt" {
+  tenant_dn   = aci_tenant.dmacprod_tenant.id
+  name        = "NSXT_Filter"
+  description = "${var.tform_managed} - Permit HTTP, HTTPS, MySQL, and ICMP"
+}
+
+resource "aci_filter_entry" "icmp_ping" {
+  filter_dn = aci_filter.filter_nsxt.id
+  name      = "icmp"
+  ether_t   = "ip"
+  prot      = "icmp"
+}
+
+resource "aci_filter_entry" "tcp_80" {
+  filter_dn   = aci_filter.filter_nsxt.id
+  name        = "http_80"
+  ether_t     = "ip"
+  prot        = "tcp"
+  d_from_port = "80"
+  d_to_port   = "80"
+}
+
+resource "aci_filter_entry" "tcp_443" {
+  filter_dn   = aci_filter.filter_nsxt.id
+  name        = "https_443"
+  ether_t     = "ip"
+  prot        = "tcp"
+  d_from_port = "443"
+  d_to_port   = "443"
+}
+
+resource "aci_filter_entry" "tcp_3306" {
+  filter_dn   = aci_filter.filter_nsxt.id
+  name        = "mysql_3306"
+  ether_t     = "ip"
+  prot        = "tcp"
+  d_from_port = "3306"
+  d_to_port   = "3306"
+}
+
+resource "aci_contract_subject" "subject_nsxt" {
+  contract_dn = aci_contract.nsxt_contract.id
+  name        = "NSXT_Subject"
+}
+
+resource "aci_contract_subject_filter" "nsxt" {
+  contract_subject_dn = aci_contract_subject.subject_nsxt.id
+  filter_dn           = aci_filter.filter_nsxt.id
+  action              = "permit"
 }
