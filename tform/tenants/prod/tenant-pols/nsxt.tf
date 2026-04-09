@@ -74,13 +74,6 @@ resource "aci_bgp_peer_connectivity_profile" "nsxt_bgp_peer" {
   as_number = each.value.remote_asn
 }
 
-################################################################
-
-resource "aci_external_network_instance_profile" "nsxt_ext_epg" {
-  l3_outside_dn = aci_l3_outside.nsxt_l3out.id
-  name          = "NSXT_ExtEPG"
-  description   = "${var.tform_managed} - External EPG for NSX-T Workloads"
-}
 
 resource "aci_l3_ext_subnet" "nsxt_catch_all_subnet" {
 
@@ -161,4 +154,32 @@ resource "aci_contract_subject_filter" "nsxt" {
   contract_subject_dn = aci_contract_subject.subject_nsxt.id
   filter_dn           = aci_filter.filter_nsxt.id
   action              = "permit"
+}
+
+
+################################################################
+# Attach Providers and Consumers to the Contract
+################################################################
+
+# NSXT Provider ()
+resource "aci_external_network_instance_profile" "nsxt_ext_epg" {
+  l3_outside_dn = aci_l3_outside.nsxt_l3out.id
+  name          = "NSXT_ExtEPG"
+  description   = "${var.tform_managed} - External EPG for NSX-T Workloads"
+
+  # NSX-T Provides this strictly filtered service
+  relation_fv_rs_prov = [aci_contract.nsxt_contract.id]
+}
+
+# Compute consumers
+resource "aci_epg_to_contract" "compute01_consume_nsxt" {
+  application_epg_dn = aci_application_epg.epg_compute01.id
+  contract_dn        = aci_contract.nsxt_contract.id
+  contract_type      = "consumer"
+}
+
+resource "aci_epg_to_contract" "compute02_consume_nsxt" {
+  application_epg_dn = aci_application_epg.epg_compute02.id
+  contract_dn        = aci_contract.nsxt_contract.id
+  contract_type      = "consumer"
 }
