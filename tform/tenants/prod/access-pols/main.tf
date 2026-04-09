@@ -4,18 +4,18 @@
 #Vlan Pool - Prod 
 
 resource "aci_vlan_pool" "prod_vlan_pool" {
-  name  = "DmacProd_StaticVLPool"
-  description   = "${var.tform_managed} - VLAN Pool DMAC Prod"
+  name        = "DmacProd_StaticVLPool"
+  description = "${var.tform_managed} - VLAN Pool DMAC Prod"
   alloc_mode  = "static"
 }
 
 resource "aci_ranges" "prod_aci_ranges" {
-  vlan_pool_dn  = aci_vlan_pool.prod_vlan_pool.id
-  description   = "${var.tform_managed} - VLAN ACI Ranges"
-  from          = "vlan-400"
-  to            = "vlan-500"
-  alloc_mode    = "static"
-  role          = "external"
+  vlan_pool_dn = aci_vlan_pool.prod_vlan_pool.id
+  description  = "${var.tform_managed} - VLAN ACI Ranges"
+  from         = "vlan-400"
+  to           = "vlan-500"
+  alloc_mode   = "static"
+  role         = "external"
 }
 
 
@@ -66,9 +66,9 @@ resource "aci_fabric_if_pol" "ten_gig_speed" {
 resource "aci_leaf_access_bundle_policy_group" "esxi_vpc" {
   for_each = local.esxi_hosts
 
-  name        = "${each.value.display_name}_VPC"
-  description = "${var.tform_managed} - Interface vPC Policy Group ${each.value.display_name}_VPC"
-  lag_t       = "node" # node for vPC, link for single-switch Port Channel
+  name                          = "${each.value.display_name}_VPC"
+  description                   = "${var.tform_managed} - Interface vPC Policy Group ${each.value.display_name}_VPC"
+  lag_t                         = "node" # node for vPC, link for single-switch Port Channel
   relation_infra_rs_cdp_if_pol  = aci_cdp_interface_policy.cdp_enable.id
   relation_infra_rs_lldp_if_pol = aci_lldp_interface_policy.lldp_enable.id
   relation_infra_rs_lacp_pol    = aci_lacp_policy.lacp_active.id
@@ -120,19 +120,19 @@ resource "aci_leaf_profile" "leaf101_102_sp" {
 # Leaf Selector - Associates the interface profile with the selector
 
 resource "aci_leaf_selector" "leaf101_102_selector" {
-  name                = "Leaf101_102_Selector"
-  description         = "${var.tform_managed} - Leaf 101 and 102"
+  name                    = "Leaf101_102_Selector"
+  description             = "${var.tform_managed} - Leaf 101 and 102"
   switch_association_type = "range"
-  leaf_profile_dn     = aci_leaf_profile.leaf101_102_sp.id
+  leaf_profile_dn         = aci_leaf_profile.leaf101_102_sp.id
 }
 
 
 # Node Blocks - Actually selects the leave switches
 
 resource "aci_node_block" "check" {
-  switch_association_dn   = aci_leaf_selector.leaf101_102_selector.id
-  name                    = "block"
-  description             = "${var.tform_managed} - Node Block L101-L102"
-  from_                   = "101"
-  to_                     = "102"
+  switch_association_dn = aci_leaf_selector.leaf101_102_selector.id
+  name                  = "block"
+  description           = "${var.tform_managed} - Node Block L101-L102"
+  from_                 = "101"
+  to_                   = "102"
 }

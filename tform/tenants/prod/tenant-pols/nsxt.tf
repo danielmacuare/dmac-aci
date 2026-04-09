@@ -6,13 +6,13 @@ resource "aci_l3_outside" "nsxt_l3out" {
   tenant_dn   = aci_tenant.dmacprod_tenant.id
   name        = "NSXT_L3Out"
   description = "${var.tform_managed} - Direct Peering to NSX-T Tier-0"
-  
+
   relation_l3ext_rs_ectx = aci_vrf.dmacprod_vrf.id
-  
+
   relation_l3ext_rs_l3_dom_att = data.aci_l3_domain_profile.nsxt_ext_domain.id
-  
+
   # 3. Enable BGP Route Export (Required to send routes to NSX-T)
-  enforce_rtctrl = ["export"] 
+  enforce_rtctrl = ["export"]
 }
 
 ################################################################
@@ -30,11 +30,11 @@ resource "aci_logical_node_to_fabric_node" "nsxt_nodes" {
   for_each = local.nsxt_border_leaves
 
   logical_node_profile_dn = aci_logical_node_profile.nsxt_l3out.id
-  
-  tdn                     = each.value.topology_path
-  
-  rtr_id                  = each.value.router_id
-  rtr_id_loop_back        = "yes"
+
+  tdn = each.value.topology_path
+
+  rtr_id           = each.value.router_id
+  rtr_id_loop_back = "yes"
 }
 
 ################################################################
@@ -51,14 +51,14 @@ resource "aci_l3out_path_attachment" "nsxt_paths" {
   for_each = local.nsxt_border_leaves
 
   logical_interface_profile_dn = aci_logical_interface_profile.nsxt_l3out_intprof.id
-  
-  target_dn                    = each.value.interface_path
-  addr                         = each.value.ip
-  
+
+  target_dn = each.value.interface_path
+  addr      = each.value.ip
+
   #L3 Routed sub interfaces are p2p connections so leaf101 and leaf102 can't share the same /29 segment.
   # Since we are building a common L2 Domain for all BGP peers, we need to use an SVI here "ext-svi". 
-  if_inst_t                    = "ext-svi"
-  encap                        = "vlan-405"
+  if_inst_t = "ext-svi"
+  encap     = "vlan-405"
 }
 
 ################################################################
@@ -78,15 +78,15 @@ resource "aci_bgp_peer_connectivity_profile" "nsxt_bgp_peer" {
 resource "aci_l3_ext_subnet" "nsxt_catch_all_subnet" {
 
 
-  for_each = local.nsxt_received_prefixes
+  for_each                             = local.nsxt_received_prefixes
   external_network_instance_profile_dn = aci_external_network_instance_profile.nsxt_ext_epg.id
-  
-  ip                                   = each.value
-  
+
+  ip = each.value
+
   # CRITICAL: 'import-security' is required to allow Contracts to apply to this subnet
   # 'shared-rtctrl' is required to allow learned routes from NSXT to be leaked to other VRFs like the shared VRF.
   # 'shared-security' is required to allow learned routes to be advertised to other VRFs.
-  scope                                = ["import-security", "shared-rtctrl", "shared-security"] 
+  scope = ["import-security", "shared-rtctrl", "shared-security"]
 }
 
 
@@ -95,10 +95,10 @@ resource "aci_l3_ext_subnet" "nsxt_catch_all_subnet" {
 ################################################################
 
 resource "aci_contract" "nsxt_contract" {
-  tenant_dn = aci_tenant.dmacprod_tenant.id
-  name      = "NSXT_Contract"
+  tenant_dn   = aci_tenant.dmacprod_tenant.id
+  name        = "NSXT_Contract"
   description = "${var.tform_managed} - Contract for NSX-T Workloads"
-  scope = "tenant" # Because we want to leak routed between VRFs
+  scope       = "tenant" # Because we want to leak routed between VRFs
 }
 ################################################################
 # Filters and Subjects

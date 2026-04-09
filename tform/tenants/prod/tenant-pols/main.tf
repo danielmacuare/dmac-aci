@@ -64,11 +64,11 @@ resource "aci_bridge_domain" "bd_netservices" {
 }
 
 resource "aci_subnet" "sub_netservices" {
-  parent_dn = aci_bridge_domain.bd_netservices.id
-  ip        = "10.20.0.1/24"
+  parent_dn   = aci_bridge_domain.bd_netservices.id
+  ip          = "10.20.0.1/24"
   description = "${var.tform_managed} - Gateway for Shared Network Services"
   # shared=route leaking + public=L3Out advertisement
-  scope     = ["shared", "public"]
+  scope = ["shared", "public"]
 }
 
 
@@ -220,10 +220,10 @@ resource "aci_filter" "filter_dhcp" {
 }
 
 resource "aci_filter_entry" "dhcp_udp_67" {
-  filter_dn   = aci_filter.filter_dhcp.id
-  name        = "udp_67"
+  filter_dn = aci_filter.filter_dhcp.id
+  name      = "udp_67"
   # ether_t "ip" covers standard IPv4 routing
-  ether_t     = "ip" 
+  ether_t     = "ip"
   prot        = "udp"
   d_from_port = "67"
   d_to_port   = "67"
@@ -232,7 +232,7 @@ resource "aci_filter_entry" "dhcp_udp_67" {
 resource "aci_filter_entry" "dhcpv6_udp_546" {
   filter_dn   = aci_filter.filter_dhcp.id
   name        = "udp_546"
-  ether_t     = "ipv6" 
+  ether_t     = "ipv6"
   prot        = "udp"
   d_from_port = "546"
   d_to_port   = "546"
@@ -242,7 +242,7 @@ resource "aci_filter_entry" "dhcpv6_udp_546" {
 resource "aci_filter_entry" "dhcpv6_udp_547" {
   filter_dn   = aci_filter.filter_dhcp.id
   name        = "udp_547"
-  ether_t     = "ipv6" 
+  ether_t     = "ipv6"
   prot        = "udp"
   d_from_port = "547"
   d_to_port   = "547"
@@ -257,8 +257,8 @@ resource "aci_contract" "contract_network_services" {
   tenant_dn   = aci_tenant.dmacprod_tenant.id
   name        = "NetworkServices_Contract"
   description = "${var.tform_managed} - Allow Network Services (DNS, DHCP, Etc.)"
-  
-  scope       = "tenant" # To allow route leaking between Prod and Shared VRFs
+
+  scope = "tenant" # To allow route leaking between Prod and Shared VRFs
 }
 
 resource "aci_contract_subject" "subject_network_services" {
@@ -313,24 +313,24 @@ resource "aci_epg_to_domain" "netservices_epg_to_domain" {
   application_epg_dn = aci_application_epg.epg_netservices.id
   tdn                = data.aci_physical_domain.dmac_prod.id
   # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
-  instr_imedcy       = "immediate"
-  res_imedcy         = "immediate"
+  instr_imedcy = "immediate"
+  res_imedcy   = "immediate"
 }
 
 resource "aci_epg_to_domain" "compute01_epg_to_domain" {
   application_epg_dn = aci_application_epg.epg_compute01.id
   tdn                = data.aci_physical_domain.dmac_prod.id
   # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
-  instr_imedcy       = "immediate"
-  res_imedcy         = "immediate"
+  instr_imedcy = "immediate"
+  res_imedcy   = "immediate"
 }
 
 resource "aci_epg_to_domain" "compute02_epg_to_domain" {
   application_epg_dn = aci_application_epg.epg_compute02.id
   tdn                = data.aci_physical_domain.dmac_prod.id
   # Required for physical domains to ensure policies are applied immediately. See https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/epg_to_domain
-  instr_imedcy       = "immediate"
-  res_imedcy         = "immediate"
+  instr_imedcy = "immediate"
+  res_imedcy   = "immediate"
 }
 
 ################################################################
@@ -340,24 +340,24 @@ resource "aci_epg_to_domain" "compute02_epg_to_domain" {
 
 # Allow VLAN 401 (Compute01) to the entire cluster 
 resource "aci_epg_to_static_path" "compute01_cluster_trunk" {
-  for_each           = toset(local.esxi_vpcs)
-  
+  for_each = toset(local.esxi_vpcs)
+
   application_epg_dn = aci_application_epg.epg_compute01.id
   tdn                = each.value
   encap              = "vlan-401"
-  mode               = "regular"      # 802.1Q Tagged
+  mode               = "regular" # 802.1Q Tagged
   instr_imedcy       = "immediate"
 
 }
 
 # Provide VLAN 402 (Compute02) to the entire cluster
 resource "aci_epg_to_static_path" "compute02_cluster_trunk" {
-  for_each           = toset(local.esxi_vpcs)
+  for_each = toset(local.esxi_vpcs)
 
   application_epg_dn = aci_application_epg.epg_compute02.id
   tdn                = each.value
   encap              = "vlan-402"
-  mode               = "regular"      # 802.1Q Tagged
+  mode               = "regular" # 802.1Q Tagged
   instr_imedcy       = "immediate"
 }
 
